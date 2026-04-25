@@ -15,7 +15,7 @@ jobs:
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: |
             # 1. 获取《金凤凰》报的新闻 (修正版)
-            GOLDEN_PHOENIX=$(curl -s "https://mmgpmedia.com" | grep -oE '<a[^>]+href="[^"]*"[^>]*>[^<]+</a>' | grep -E '德宏|新世纪|景栋' | head -6 | sed 's/<a[^>]*href="\([^"]*\)"[^>]*>\([^<]*\)<\/a>/🔸 [\2](\1)/')
+            GOLDEN_PHOENIX=$(curl -s "https://mmgpmedia.com" | grep -oE '<a[^>]+href="[^"]*"[^>]*>[^<]+</a>' | GOLDEN_PHOENIX=$(curl -s "https://mmgpmedia.com" | grep -oE '<a[^>]+href="[^"]*"[^>]*>[^<]+</a>' | grep -v 'href="/"' | head -6 | sed 's/<a[^>]*href="\([^"]*\)"[^>]*>\([^<]*\)<\/a>/🔸 [\2](\1)/') | head -6 | sed 's/<a[^>]*href="\([^"]*\)"[^>]*>\([^<]*\)<\/a>/🔸 [\2](\1)/')
 
             if [ -z "$GOLDEN_PHOENIX" ]; then
               GOLDEN_PHOENIX="  🔸 今日暂无热点新闻"
