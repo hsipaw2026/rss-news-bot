@@ -1,20 +1,32 @@
-name: 推送新闻到Telegram
+name: 缅甸新闻推送
 
 on:
   schedule:
-    - cron: '30 0 * * *'
+    - cron: '30 1 * * *'  # 每天缅甸时间早上8点推送
   workflow_dispatch:
 
 jobs:
   send-news:
     runs-on: ubuntu-latest
     steps:
-      - name: 发送测试消息到Telegram
+      - name: 获取并发送新闻
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: |
-          MESSAGE="📰 *新闻机器人已启动*%0A%0A✅ 配置成功！%0A%0A接下来可以添加RSS新闻源。"
+          # 获取缅华网新闻
+          MHWMM_NEWS=$(curl -s "https://www.mhwmm.com" | grep -oE 'href="[^"]+\.html"[^>]*>[^<]*</a>' | head -10 | sed 's/href="\// /g' | sed 's/\.html"/.html/g' | sed 's/"><[^>]*>//g' | sed 's/^/🔹 /')
+          
+          # 获取金凤凰报新闻
+          MMGP_NEWS=$(curl -s "https://www.mmgpmedia.com" | grep -oE 'href="[^"]+\.html"[^>]*>[^<]*</a>' | head -10 | sed 's/href="\// /g' | sed 's/\.html"/.html/g' | sed 's/"><[^>]*>//g' | sed 's/^/🔸 /')
+          
+          # 组装消息
+          MESSAGE="📰 *今日缅甸新闻*%0A%0A"
+          MESSAGE="${MESSAGE}*📌 缅华网*%0A${MHWMM_NEWS}%0A%0A"
+          MESSAGE="${MESSAGE}*📌 金凤凰报*%0A${MMGP_NEWS}%0A%0A"
+          MESSAGE="${MESSAGE}📅 $(date '+%Y-%m-%d') | 每日自动推送"
+          
+          # 发送到Telegram
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
             -d "chat_id=${CHAT_ID}" \
             -d "text=${MESSAGE}" \
